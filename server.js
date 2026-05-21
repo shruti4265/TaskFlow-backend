@@ -37,7 +37,7 @@ app.post("/register",async (req,res)=>{
         const token=jwt.sign(
             {id:userID,username:name,email:email},
             process.env.JWT_SECRET,
-            {expiresIn:"1h"}
+            {expiresIn:"7d"}
         );
         res.status(200).json({message:"User registered sucessfully",token,user:{id:userID,username:name,email:email,profile_pic:profilePicNumber}});
     }catch(err){
@@ -240,6 +240,29 @@ app.delete("/users/delete", auth, async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: "Error deleting account" });
+    }
+});
+app.patch("/cards/:id/move", auth, async (req, res) => {
+    try {
+        const { column_id, position } = req.body;
+
+        // shift cards down in destination column to make room
+        await db.query(
+            `UPDATE cards SET position = position + 1 
+             WHERE column_id = $1 AND position >= $2 AND id != $3`,
+            [column_id, position, req.params.id]
+        );
+
+        // now place the dragged card
+        await db.query(
+            "UPDATE cards SET column_id=$1, position=$2 WHERE id=$3",
+            [column_id, position, req.params.id]
+        );
+
+        res.status(200).json({ message: "Card updated successfully" });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Error updating card" });
     }
 });
 

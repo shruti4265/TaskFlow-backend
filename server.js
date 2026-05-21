@@ -60,7 +60,7 @@ app.post("/login", async (req,res)=>{
         const token =jwt.sign(
             {id:user.id,username:user.username,email:user.email},
             process.env.JWT_SECRET,
-            {expiresIn:"1h"}
+            {expiresIn:"7d"}
         );
         res.status(200).json({message:"sign in successful",token,user:{id:user.id,username:user.username,email:user.email,profile_pic:user.profile_pic}});
     }catch(err){
